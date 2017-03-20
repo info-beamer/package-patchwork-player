@@ -6,6 +6,7 @@
         ".*.html$",
         "^example-.*",
         "^doc-.*",
+        "package-header.jpg",
         ".*.md$"
     ],
     "options": [{

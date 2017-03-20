@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      #plane {
+        background-color: white;
+        border: 1px solid lightgray;
+        user-select: none;
+        width: 750px;
+        height: 500px;
+        overflow: hidden;
+      }
+      .number-input {
+        width: 75px;
+        border: 0;
+        border-bottom: 1px dotted black;
+      }
+      .remove-screen {
+        float: right;
+        border: 0;
+        background-color: transparent;
+      }
+      .add-screen {
+        margin-right: 10px;
+      }
+      .form-control {
+        width: initial;
+        display: inline-block;
+      }
+      input {
+        text-align: right;
+      }
+      rect {
+        cursor: move;
+      }
+      text {
+        pointer-events: none;
+      }
+      .help {
+        cursor: pointer;
+      }
+      .help:hover {
+        color: gray;
+      }
+    </style>
+  </head>
+  <body>
+    <div id='app'>
+      <config-ui/>
+    </div>
+    <script>
+      MOCK_ASSETS = {};
+      MOCK_NODE_ASSETS = {};
+      MOCK_DEVICES = [{
+        description: 'Pi 1',
+        id: 1,
+        serial: "12345",
+      }, {
+        description: 'Pi 2',
+        id: 2,
+        serial: "23456",
+      }, {
+        description: 'Pi 3',
+        id: 3,
+        serial: "34567",
+      }];
+      MOCK_CONFIG = {
+        width: 120,
+        height: 33,
+        x: 15,
+        y: 20,
+        screens: [
+           {
+             "serial": "12345",
+             "x": 15,
+             "y": 20,
+             "rotation": 0,
+             "inches": 27,
+             "width": 1920,
+             "height": 1080
+           },
+           {
+             "serial": "23456",
+             "x": 60.77,
+             "y": 0,
+             "rotation": 0,
+             "inches": 19,
+             "width": 1024,
+             "height": 768, 
+           }
+         ]
+      }
+    </script>
+
+    <script type="text/x-template" id="config-ui">
+      <div>
+        <svg id="plane" @wheel.prevent="onWheel">
+          <pattern id="deselected" patternUnits="userSpaceOnUse" width="4" height="4">
+            <path d="M-1,1 l2,-2 M0,4 l4,-4 M3,5 l2,-2" style="stroke:lightgray; stroke-width:1"/>
+          </pattern>
+          <content-area/>
+          <floating-screen v-for="n in num_screens" :screen_id="n-1"/>
+        </svg>
+
+        <screen-editor
+          v-if="selected_screen != null"
+          :screen_id="selected_screen"/>
+
+        <area-editor
+          v-if="selected_screen == null"/>
+
+        <div class='row'>
+          <div class='col-xs-6'>
+            <div v-if="spare_devices.length > 0">
+              <label class='field-label'>Screens available</label><br/>
+              <select class="form-control" v-model="selected_serial">
+                <option disabled value="">Select screen to add</option>
+                <option
+                  v-for="device in spare_devices"
+                  :value="device.serial">
+                  {{ device.description }} ({{device.serial}})
+                </option>
+              </select>
+              <button
+                class='btn add-screen'
+                :disabled="selected_serial == ''"
+                @click="onAddScreen">
+                <span class='glyphicon glyphicon-plus-sign'></span>
+                Add Screen
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </script>
+
+    <script type="text/x-template" id="content-area">
+      <g :transform="transform">
+        <rect :width="pixel_width" :height="pixel_height" :fill="fill"
+          @click="onSelected"
+          @mousedown="onDragStart"
+          @mouseout="onDragStop"
+          @mousemove="onDragMove"
+          @mouseup="onDragStop"/>
+        <text x="5" y="20" fill="#666">Virtual Content Area</text>
+        <text x="5" y="40" fill="#666">{{content.width}} x {{content.height}} cm</text>
+      </g>
+    </script>
+
+    <script type="text/x-template" id="floating-screen">
+      <g :transform="transform">
+        <rect :width="pixel_width" :height="pixel_height"
+          :fill="color"
+          fill-opacity="0.8"
+          @wheel="onWheel"
+          @mousedown="onDragStart"
+          @mouseout="onDragStop"
+          @mousemove="onDragMove"
+          @mouseup="onDragStop"/>
+        <rect width="5" height="5" fill="black"/>
+        <text x="5" y="20" fill="white">Screen {{screen.serial}}</text>
+        <text x="5" y="40" fill="white">{{device.description}}</text>
+        <text x="5" y="60" fill="white">{{screen.inches}}" ({{screen.width}} x {{screen.height}})</text>
+      </g>
+    </script>
+
+    <script type="text/x-template" id="area-editor">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          Properties of Video Area
+          <help-icon target="settingupthevirtualcontentarea"/>
+        </div>
+        <div class="panel-body">
+          <label class='field-label'>Size</label><br/>
+          Width:
+          <input
+            class="number-input"
+            type="number"
+            :value="content.width.toFixed(0)"
+            @keyup="onUpdateWidth" @change="onUpdateWidth"/>
+          cm,
+          &nbsp;
+          &nbsp;
+          Height:
+          <input
+            class="number-input"
+            type="number"
+            :value="content.height.toFixed(0)"
+            @keyup="onUpdateHeight" @change="onUpdateHeight"/>
+          cm
+        </div>
+      </div>
+    </script>
+
+    <script type="text/x-template" id="screen-editor">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          Properties of Screen {{device.serial}}: <b>{{device.description}}</b>
+          <help-icon target="settingupthescreens"/>
+          <button class='remove-screen' @click="onDelete">
+            <span class='glyphicon glyphicon-remove'></span>
+          </button>
+        </div>
+        <div class="panel-body">
+          <div class='row'>
+            <div class='col-xs-5'>
+              <label class='field-label'>Position</label><br/>
+              x:
+              <input
+                class="number-input"
+                type="number"
+                :value="screen.x.toFixed(1)"
+                @keyup="onUpdateX" @change="onUpdateX"/>
+              cm,
+              &nbsp;
+              &nbsp;
+              y:
+              <input
+                class="number-input"
+                type="number"
+                :value="screen.y.toFixed(1)"
+                @keyup="onUpdateY" @change="onUpdateY"/>
+              cm
+            </div>
+            <div class='col-xs-2'>
+              <label class='field-label'>Rotation</label><br/>
+              <input
+                class="number-input"
+                type="number"
+                :value="screen.rotation.toFixed(1)"
+                @keyup="onUpdateRotation" @change="onUpdateRotation"/>
+              &deg;
+            </div>
+            <div class='col-xs-2'>
+              <label class='field-label'>Screen Size</label><br/>
+              <input
+                class="number-input"
+                type="number"
+                :value="screen.inches.toFixed(1)"
+                @keyup="onUpdateSize" @change="onUpdateSize"/>
+              "
+            </div>
+            <div class='col-xs-2'>
+              <label class='field-label'>Resolution</label><br/>
+              <select
+                @change="onResolution">
+                <option
+                  v-for="resolution in resolutions"
+                  :value="resolution.key"
+                  :selected="resolution.key == current_resolution_key">
+                  {{ resolution.value}}
+                </option>
+              </select>
+            </div>
+          </div>
+        </div>
+        </div>
+      </div>
+    </script>
+
+    <script type="text/x-template" id="help-icon">
+      <span class='glyphicon glyphicon-question-sign help'
+        title='Visit help page (opens in a new window)'
+        @click='onClick'/>
+    </script>
+
+    <script src="hosted.js"></script>
+    <script src="vue.js"></script>
+    <script src="vuex.js"></script>
+    <script src="config.js"></script>
+  </body>
+</html>

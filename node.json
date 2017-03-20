@@ -1,0 +1,73 @@
+{
+    "name": "Screen Configuration",
+    "custom_ui": "config.html",
+    "optional": [
+        ".*.js$",
+        ".*.html$",
+        "^example-.*",
+        "^doc-.*",
+        ".*.md$"
+    ],
+    "options": [{
+        "title": "Screens",
+        "name": "screens",
+        "type": "list",
+        "itemname": "Screen",
+        "items": [{
+            "title": "Device",
+            "ui_width": 6,
+            "name": "serial",
+            "type": "device"
+        }, {
+            "title": "Inches",
+            "ui_width": 2,
+            "name": "inches",
+            "type": "float",
+            "default": 27
+        }, {
+            "title": "Res Width",
+            "ui_width": 2,
+            "name": "width",
+            "type": "integer",
+            "default": 1920
+        }, {
+            "title": "Res Height",
+            "ui_width": 2,
+            "name": "height",
+            "type": "integer",
+            "default": 1080 
+        },
+        
+        {
+            "title": "X Position (cm)",
+            "ui_width": 3,
+            "name": "x",
+            "type": "float",
+            "default": 0
+        }, {
+            "title": "Y Position (cm)",
+            "ui_width": 3,
+            "name": "y",
+            "type": "float",
+            "default": 0
+        }, {
+            "title": "Rotation (clockwise from horizontal)",
+            "ui_width": 6,
+            "name": "rotation",
+            "type": "float",
+            "default": 0
+        }]
+    }, {
+        "title": "Area Width (cm)",
+        "ui_width": 3,
+        "name": "width",
+        "type": "float",
+        "default": 120.54
+    }, {
+        "title": "Area Height (cm)",
+        "ui_width": 3,
+        "name": "height",
+        "type": "float",
+        "default": 33.62
+    }]
+}

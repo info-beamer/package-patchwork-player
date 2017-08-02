@@ -337,6 +337,7 @@ Vue.component('screen-editor', {
         {key: "1024x768",  value: "1024x768"},
         {key: "1280x1024", value: "1280x1024"},
         {key: "1280x720",  value: "1280x720 (HD ready)"},
+        {key: "1280x800",  value: "1280x800"},
         {key: "1920x1080", value: "1920x1080 (FullHD)"},
         {key: "1920x1280", value: "1920x1280"},
       ]

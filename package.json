@@ -1,6 +1,6 @@
 {
     "name": "Media on freely arranged screens",
-    "author": "Florian Wesch <fw@dividuum.de>",
+    "author": "Florian Wesch <fw@info-beamer.com>",
     "desc": "Plays videos and images on a virtual space covered with as many screens as you like",
     "repository": "https://github.com/info-beamer/package-patchwork-player",
     "version": "preview"
